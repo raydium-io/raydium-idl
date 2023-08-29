@@ -1,6 +1,6 @@
 // @ts-nocheck
 import * as B from "@native-to-anchor/buffer-layout";
-import { Idl, InstructionCoder } from "@project-serum/anchor";
+import { Idl, InstructionCoder } from "@coral-xyz/anchor";
 
 export class RaydiumAmmInstructionCoder implements InstructionCoder {
   constructor(_idl: Idl) {}
@@ -28,6 +28,10 @@ case "updateConfigAccount": {return encodeUpdateConfigAccount(ix);}
         throw new Error(`Invalid instruction: ${ixName}`);
       }
     }
+  }
+
+  public decode(ix: Buffer): Object {
+    return decodeData(ix)
   }
 
   encodeState(_ixName: string, _ix: any): Buffer {
@@ -70,10 +74,28 @@ function encodeUpdateConfigAccount({param,owner,}: any): Buffer {return encodeDa
 
 
 const LAYOUT = B.union(B.u8("instruction"));
-LAYOUT.addVariant(0, B.struct([B.u8("nonce"),B.u64("openTime"),]), "initialize");LAYOUT.addVariant(1, B.struct([B.u8("nonce"),B.u64("openTime"),B.u64("initPcAmount"),B.u64("initCoinAmount"),]), "initialize2");LAYOUT.addVariant(2, B.struct([B.u16("planOrderLimit"),B.u16("placeOrderLimit"),B.u16("cancelOrderLimit"),]), "monitorStep");LAYOUT.addVariant(3, B.struct([B.u64("maxCoinAmount"),B.u64("maxPcAmount"),B.u64("baseSide"),]), "deposit");LAYOUT.addVariant(4, B.struct([B.u64("amount"),]), "withdraw");LAYOUT.addVariant(5, B.struct([]), "migrateToOpenBook");LAYOUT.addVariant(6, B.struct([B.u8("param"),B.option(B.u64(), "value"),B.option(B.publicKey(), "newPubkey"),B.option(B.struct([B.u64("minSeparateNumerator"),B.u64("minSeparateDenominator"),B.u64("tradeFeeNumerator"),B.u64("tradeFeeDenominator"),B.u64("pnlNumerator"),B.u64("pnlDenominator"),B.u64("swapFeeNumerator"),B.u64("swapFeeDenominator"),], ), "fees"),B.option(B.struct([B.u64("lastOrderNumerator"),B.u64("lastOrderDenominator"),], ), "lastOrderDistance"),B.option(B.struct([B.u64("needTakePc"),B.u64("needTakeCoin"),], ), "needTakeAmounts"),]), "setParams");LAYOUT.addVariant(7, B.struct([]), "withdrawPnl");LAYOUT.addVariant(8, B.struct([B.u64("amount"),]), "withdrawSrm");LAYOUT.addVariant(9, B.struct([B.u64("amountIn"),B.u64("minimumAmountOut"),]), "swapBaseIn");LAYOUT.addVariant(10, B.struct([B.u8("nonce"),]), "preInitialize");LAYOUT.addVariant(11, B.struct([B.u64("maxAmountIn"),B.u64("amountOut"),]), "swapBaseOut");LAYOUT.addVariant(12, B.struct([B.u8("param"),B.option(B.struct([B.u64("amountIn"),B.u64("minimumAmountOut"),], ), "swapBaseInValue"),B.option(B.struct([B.u64("maxAmountIn"),B.u64("amountOut"),], ), "swapBaseOutValue"),]), "simulateInfo");LAYOUT.addVariant(13, B.struct([B.u16("limit"),]), "adminCancelOrders");LAYOUT.addVariant(14, B.struct([]), "createConfigAccount");LAYOUT.addVariant(15, B.struct([B.u8("param"),B.publicKey("owner"),]), "updateConfigAccount");
+LAYOUT.addVariant(0, B.struct([B.u8("nonce"),B.u64("openTime"),]), "initialize");
+LAYOUT.addVariant(1, B.struct([B.u8("nonce"),B.u64("openTime"),B.u64("initPcAmount"),B.u64("initCoinAmount"),]), "initialize2");
+LAYOUT.addVariant(2, B.struct([B.u16("planOrderLimit"),B.u16("placeOrderLimit"),B.u16("cancelOrderLimit"),]), "monitorStep");
+LAYOUT.addVariant(3, B.struct([B.u64("maxCoinAmount"),B.u64("maxPcAmount"),B.u64("baseSide"),]), "deposit");
+LAYOUT.addVariant(4, B.struct([B.u64("amount"),]), "withdraw");
+LAYOUT.addVariant(5, B.struct([]), "migrateToOpenBook");
+LAYOUT.addVariant(6, B.struct([B.u8("param"),B.option(B.u64(), "value"),B.option(B.publicKey(), "newPubkey"),B.option(B.struct([B.u64("minSeparateNumerator"),B.u64("minSeparateDenominator"),B.u64("tradeFeeNumerator"),B.u64("tradeFeeDenominator"),B.u64("pnlNumerator"),B.u64("pnlDenominator"),B.u64("swapFeeNumerator"),B.u64("swapFeeDenominator"),], ), "fees"),B.option(B.struct([B.u64("lastOrderNumerator"),B.u64("lastOrderDenominator"),], ), "lastOrderDistance"),B.option(B.struct([B.u64("needTakePc"),B.u64("needTakeCoin"),], ), "needTakeAmounts"),]), "setParams");
+LAYOUT.addVariant(7, B.struct([]), "withdrawPnl");
+LAYOUT.addVariant(8, B.struct([B.u64("amount"),]), "withdrawSrm");
+LAYOUT.addVariant(9, B.struct([B.u64("amountIn"),B.u64("minimumAmountOut"),]), "swapBaseIn");
+LAYOUT.addVariant(10, B.struct([B.u8("nonce"),]), "preInitialize");LAYOUT.addVariant(11, B.struct([B.u64("maxAmountIn"),B.u64("amountOut"),]), "swapBaseOut");
+LAYOUT.addVariant(12, B.struct([B.u8("param"),B.option(B.struct([B.u64("amountIn"),B.u64("minimumAmountOut"),], ), "swapBaseInValue"),B.option(B.struct([B.u64("maxAmountIn"),B.u64("amountOut"),], ), "swapBaseOutValue"),]), "simulateInfo");LAYOUT.addVariant(13, B.struct([B.u16("limit"),]), "adminCancelOrders");
+LAYOUT.addVariant(14, B.struct([]), "createConfigAccount");
+LAYOUT.addVariant(15, B.struct([B.u8("param"),B.publicKey("owner"),]), "updateConfigAccount");
 
 function encodeData(ix: any, span: number): Buffer {
   const b = Buffer.alloc(span);
   LAYOUT.encode(ix, b);
   return b;
 }
+
+function decodeData(b: Buffer): Object {
+  return LAYOUT.decode(b);
+}
+
