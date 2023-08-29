@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { Program, AnchorProvider } from "@project-serum/anchor";
+import { Program, AnchorProvider } from "@coral-xyz/anchor";
 
 import { RaydiumAmmCoder } from "./coder";
 
@@ -545,12 +545,12 @@ type RaydiumAmm = {
           "isSigner": false
         },
         {
-          "name": "uerCoinTokenAccount",
+          "name": "userCoinTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "uerPcTokenAccount",
+          "name": "userPcTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -2863,12 +2863,12 @@ const IDL: RaydiumAmm = {
           "isSigner": false
         },
         {
-          "name": "uerCoinTokenAccount",
+          "name": "userCoinTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "uerPcTokenAccount",
+          "name": "userPcTokenAccount",
           "isMut": true,
           "isSigner": false
         },
