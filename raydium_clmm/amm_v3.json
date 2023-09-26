@@ -181,11 +181,27 @@
           "isSigner": false
         },
         {
-          "name": "tokenProgram",
+          "name": "tickArrayBitmap",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Initialize an account to store if a tick array is initialized."
+          ]
+        },
+        {
+          "name": "tokenProgram0",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "Spl token program"
+            "Spl token program or token program 2022"
+          ]
+        },
+        {
+          "name": "tokenProgram1",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Spl token program or token program 2022"
           ]
         },
         {
@@ -434,7 +450,7 @@
           ]
         },
         {
-          "name": "tokenProgram",
+          "name": "rewardTokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -503,9 +519,33 @@
           ]
         },
         {
+          "name": "rewardVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of reward token vault"
+          ]
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program 2022"
+          ]
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "memo program"
+          ]
         }
       ],
       "args": [
@@ -577,6 +617,22 @@
           "isSigner": false,
           "docs": [
             "load info from the account to judge reward permission"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program 2022"
           ]
         }
       ],
@@ -653,6 +709,22 @@
           ]
         },
         {
+          "name": "vault0Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "vault1Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        },
+        {
           "name": "recipientTokenAccount0",
           "isMut": true,
           "isSigner": false,
@@ -674,6 +746,14 @@
           "isSigner": false,
           "docs": [
             "The SPL program to perform token transfers"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The SPL program 2022 to perform token transfers"
           ]
         }
       ],
@@ -742,6 +822,22 @@
           ]
         },
         {
+          "name": "vault0Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "vault1Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        },
+        {
           "name": "recipientTokenAccount0",
           "isMut": true,
           "isSigner": false,
@@ -763,6 +859,14 @@
           "isSigner": false,
           "docs": [
             "The SPL program to perform token transfers"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The SPL program 2022 to perform token transfers"
           ]
         }
       ],
@@ -971,6 +1075,234 @@
       ]
     },
     {
+      "name": "openPositionV2",
+      "docs": [
+        "Creates a new position wrapped in a NFT, support Token2022",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `tick_lower_index` - The low boundary of market",
+        "* `tick_upper_index` - The upper boundary of market",
+        "* `tick_array_lower_start_index` - The start index of tick array which include tick low",
+        "* `tick_array_upper_start_index` - The start index of tick array which include tick upper",
+        "* `liquidity` - The liquidity to be added, if zero, calculate liquidity base amount_0_max or amount_1_max according base_flag",
+        "* `amount_0_max` - The max amount of token_0 to spend, which serves as a slippage check",
+        "* `amount_1_max` - The max amount of token_1 to spend, which serves as a slippage check",
+        "* `base_flag` - must be special if liquidity is zero, false: calculate liquidity base amount_0_max otherwise base amount_1_max",
+        ""
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Pays to mint the position"
+          ]
+        },
+        {
+          "name": "positionNftOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionNftMint",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Unique token mint address"
+          ]
+        },
+        {
+          "name": "positionNftAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Token account where position NFT will be minted"
+          ]
+        },
+        {
+          "name": "metadataAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "To store metaplex metadata"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Add liquidity for this pool"
+          ]
+        },
+        {
+          "name": "protocolPosition",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Store the information of market marking in range"
+          ]
+        },
+        {
+          "name": "tickArrayLower",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tickArrayUpper",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "personalPosition",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "personal position state"
+          ]
+        },
+        {
+          "name": "tokenAccount0",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The token_0 account deposit token to the pool"
+          ]
+        },
+        {
+          "name": "tokenAccount1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The token_1 account deposit token to the pool"
+          ]
+        },
+        {
+          "name": "tokenVault0",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address that holds pool tokens for token_0"
+          ]
+        },
+        {
+          "name": "tokenVault1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address that holds pool tokens for token_1"
+          ]
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Sysvar for token mint and ATA creation"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Program to create the position manager state account"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Program to create mint account and mint tokens"
+          ]
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Program to create an ATA for receiving position NFT"
+          ]
+        },
+        {
+          "name": "metadataProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Program to create NFT metadata"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Program to create mint account and mint tokens"
+          ]
+        },
+        {
+          "name": "vault0Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "vault1Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "tickLowerIndex",
+          "type": "i32"
+        },
+        {
+          "name": "tickUpperIndex",
+          "type": "i32"
+        },
+        {
+          "name": "tickArrayLowerStartIndex",
+          "type": "i32"
+        },
+        {
+          "name": "tickArrayUpperStartIndex",
+          "type": "i32"
+        },
+        {
+          "name": "liquidity",
+          "type": "u128"
+        },
+        {
+          "name": "amount0Max",
+          "type": "u64"
+        },
+        {
+          "name": "amount1Max",
+          "type": "u64"
+        },
+        {
+          "name": "withMatedata",
+          "type": "bool"
+        },
+        {
+          "name": "baseFlag",
+          "type": {
+            "option": "bool"
+          }
+        }
+      ]
+    },
+    {
       "name": "closePosition",
       "docs": [
         "Close a position, the nft mint and nft account",
@@ -1041,7 +1373,7 @@
         "# Arguments",
         "",
         "* `ctx` - The context of accounts",
-        "* `liquidity` - The desired liquidity to be added",
+        "* `liquidity` - The desired liquidity to be added, can't be zero",
         "* `amount_0_max` - The max amount of token_0 to spend, which serves as a slippage check",
         "* `amount_1_max` - The max amount of token_1 to spend, which serves as a slippage check",
         ""
@@ -1154,6 +1486,157 @@
       ]
     },
     {
+      "name": "increaseLiquidityV2",
+      "docs": [
+        "Increases liquidity with a exist position, with amount paid by `payer`, support Token2022",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `liquidity` - The desired liquidity to be added, if zero, calculate liquidity base amount_0 or amount_1 according base_flag",
+        "* `amount_0_max` - The max amount of token_0 to spend, which serves as a slippage check",
+        "* `amount_1_max` - The max amount of token_1 to spend, which serves as a slippage check",
+        "* `base_flag` - active if liquidity is zero, 0: calculate liquidity base amount_0_max otherwise base amount_1_max",
+        ""
+      ],
+      "accounts": [
+        {
+          "name": "nftOwner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Pays to mint the position"
+          ]
+        },
+        {
+          "name": "nftAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The token account for nft"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "protocolPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "personalPosition",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Increase liquidity for this position"
+          ]
+        },
+        {
+          "name": "tickArrayLower",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Stores init state for the lower tick"
+          ]
+        },
+        {
+          "name": "tickArrayUpper",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Stores init state for the upper tick"
+          ]
+        },
+        {
+          "name": "tokenAccount0",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The payer's token account for token_0"
+          ]
+        },
+        {
+          "name": "tokenAccount1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The token account spending token_1 to mint the position"
+          ]
+        },
+        {
+          "name": "tokenVault0",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address that holds pool tokens for token_0"
+          ]
+        },
+        {
+          "name": "tokenVault1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address that holds pool tokens for token_1"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Program to create mint account and mint tokens"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program 2022"
+          ]
+        },
+        {
+          "name": "vault0Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "vault1Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "liquidity",
+          "type": "u128"
+        },
+        {
+          "name": "amount0Max",
+          "type": "u64"
+        },
+        {
+          "name": "amount1Max",
+          "type": "u64"
+        },
+        {
+          "name": "baseFlag",
+          "type": {
+            "option": "bool"
+          }
+        }
+      ]
+    },
+    {
       "name": "decreaseLiquidity",
       "docs": [
         "Decreases liquidity with a exist position",
@@ -1255,6 +1738,158 @@
           "isSigner": false,
           "docs": [
             "SPL program to transfer out tokens"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "liquidity",
+          "type": "u128"
+        },
+        {
+          "name": "amount0Min",
+          "type": "u64"
+        },
+        {
+          "name": "amount1Min",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "decreaseLiquidityV2",
+      "docs": [
+        "Decreases liquidity with a exist position, support Token2022",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` -  The context of accounts",
+        "* `liquidity` - The amount by which liquidity will be decreased",
+        "* `amount_0_min` - The minimum amount of token_0 that should be accounted for the burned liquidity",
+        "* `amount_1_min` - The minimum amount of token_1 that should be accounted for the burned liquidity",
+        ""
+      ],
+      "accounts": [
+        {
+          "name": "nftOwner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The position owner or delegated authority"
+          ]
+        },
+        {
+          "name": "nftAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The token account for the tokenized position"
+          ]
+        },
+        {
+          "name": "personalPosition",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Decrease liquidity for this position"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "protocolPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault0",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Token_0 vault"
+          ]
+        },
+        {
+          "name": "tokenVault1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Token_1 vault"
+          ]
+        },
+        {
+          "name": "tickArrayLower",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Stores init state for the lower tick"
+          ]
+        },
+        {
+          "name": "tickArrayUpper",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Stores init state for the upper tick"
+          ]
+        },
+        {
+          "name": "recipientTokenAccount0",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The destination token account for receive amount_0"
+          ]
+        },
+        {
+          "name": "recipientTokenAccount1",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The destination token account for receive amount_1"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program to transfer out tokens"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program 2022"
+          ]
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "memo program"
+          ]
+        },
+        {
+          "name": "vault0Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "vault1Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
           ]
         }
       ],
@@ -1386,6 +2021,142 @@
       ]
     },
     {
+      "name": "swapV2",
+      "docs": [
+        "Swaps one token for as much as possible of another token across a single pool, support token program 2022",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `amount` - Arranged in pairs with other_amount_threshold. (amount_in, amount_out_minimum) or (amount_out, amount_in_maximum)",
+        "* `other_amount_threshold` - For slippage check",
+        "* `sqrt_price_limit` - The Q64.64 sqrt price √P limit. If zero for one, the price cannot",
+        "* `is_base_input` - swap base input or swap base output",
+        ""
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The user performing the swap"
+          ]
+        },
+        {
+          "name": "ammConfig",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The factory state to read protocol fees"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account of the pool in which the swap will be performed"
+          ]
+        },
+        {
+          "name": "inputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for input token"
+          ]
+        },
+        {
+          "name": "outputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for output token"
+          ]
+        },
+        {
+          "name": "inputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for input token"
+          ]
+        },
+        {
+          "name": "outputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for output token"
+          ]
+        },
+        {
+          "name": "observationState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account for the most recent oracle observation"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for token transfers"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program 2022 for token transfers"
+          ]
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "inputVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "outputVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "otherAmountThreshold",
+          "type": "u64"
+        },
+        {
+          "name": "sqrtPriceLimitX64",
+          "type": "u128"
+        },
+        {
+          "name": "isBaseInput",
+          "type": "bool"
+        }
+      ]
+    },
+    {
       "name": "swapRouterBaseIn",
       "docs": [
         "Swap token for as much as possible of another token across the path provided, base input",
@@ -1415,12 +2186,33 @@
           ]
         },
         {
+          "name": "inputTokenMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The mint of input token"
+          ]
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
             "SPL program for token transfers"
           ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program 2022 for token transfers"
+          ]
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1711,7 +2503,12 @@
             "docs": [
               "Bump to identify PDA"
             ],
-            "type": "u8"
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
           },
           {
             "name": "ammConfig",
@@ -2073,6 +2870,52 @@
               "array": [
                 "u8",
                 115
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TickArrayBitmapExtension",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poolId",
+            "type": "publicKey"
+          },
+          {
+            "name": "positiveTickArrayBitmap",
+            "docs": [
+              "Packed initialized tick array state for start_tick_index is positive"
+            ],
+            "type": {
+              "array": [
+                {
+                  "array": [
+                    "u64",
+                    8
+                  ]
+                },
+                14
+              ]
+            }
+          },
+          {
+            "name": "negativeTickArrayBitmap",
+            "docs": [
+              "Packed initialized tick array state for start_tick_index is negitive"
+            ],
+            "type": {
+              "array": [
+                {
+                  "array": [
+                    "u64",
+                    8
+                  ]
+                },
+                14
               ]
             }
           }
@@ -2481,6 +3324,16 @@
           "name": "depositAmount1",
           "type": "u64",
           "index": false
+        },
+        {
+          "name": "depositAmount0TransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "depositAmount1TransferFee",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -2504,6 +3357,16 @@
         },
         {
           "name": "amount1",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "amount0TransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "amount1TransferFee",
           "type": "u64",
           "index": false
         }
@@ -2550,6 +3413,66 @@
               3
             ]
           },
+          "index": false
+        },
+        {
+          "name": "transferFee0",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "transferFee1",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "LiquidityCalculateEvent",
+      "fields": [
+        {
+          "name": "poolLiquidity",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "poolSqrtPriceX64",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "poolTick",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "calcAmount0",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "calcAmount1",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tradeFeeOwed0",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tradeFeeOwed1",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "transferFee0",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "transferFee1",
+          "type": "u64",
           "index": false
         }
       ]
@@ -3005,6 +3928,16 @@
       "code": 6038,
       "name": "UnInitializedRewardInfo",
       "msg": "uninitialized reward info"
+    },
+    {
+      "code": 6039,
+      "name": "NotSupportMint",
+      "msg": "Not support token_2022 mint extension"
+    },
+    {
+      "code": 6040,
+      "name": "MissingTickArrayBitmapExtensionAccount",
+      "msg": "Missing tickarray bitmap extension account"
     }
   ]
 }
