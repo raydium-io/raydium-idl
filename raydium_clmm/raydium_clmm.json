@@ -1,12 +1,49 @@
 {
   "address": "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
   "metadata": {
-    "name": "amm_v3",
+    "name": "raydium_clmm",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Anchor client and source for Raydium concentrated liquidity AMM"
   },
   "instructions": [
+    {
+      "name": "close_limit_order",
+      "docs": [
+        "Close a limit order",
+        "Closes the limit order account when unfilled amount is zero",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        ""
+      ],
+      "discriminator": [
+        76,
+        124,
+        128,
+        15,
+        213,
+        87,
+        37,
+        250
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "rent_receiver",
+          "writable": true
+        },
+        {
+          "name": "limit_order",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
     {
       "name": "close_position",
       "docs": [
@@ -92,6 +129,41 @@
       "args": []
     },
     {
+      "name": "close_protocol_position",
+      "docs": [
+        "The CLMM protocol decides to discard the protocol position account, which can reduce users' opening costs.",
+        "After the original protocol position account is closed, the gas fee will be refunded to the user who created it.",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        ""
+      ],
+      "discriminator": [
+        201,
+        117,
+        152,
+        144,
+        85,
+        85,
+        108,
+        178
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
+        },
+        {
+          "name": "protocol_position",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "collect_fund_fee",
       "docs": [
         "Collect the fund fee accrued to the pool",
@@ -99,8 +171,8 @@
         "# Arguments",
         "",
         "* `ctx` - The context of accounts",
-        "* `amount_0_requested` - The maximum amount of token_0 to send",
-        "* `amount_1_requested` - The maximum amount of token_1 to send",
+        "* `amount_0_requested` - The maximum amount of token_0 to send, can be 0 to collect fees in only token_1",
+        "* `amount_1_requested` - The maximum amount of token_1 to send, can be 0 to collect fees in only token_0",
         ""
       ],
       "discriminator": [
@@ -208,8 +280,8 @@
         "# Arguments",
         "",
         "* `ctx` - The context of accounts",
-        "* `amount_0_requested` - The maximum amount of token_0 to send",
-        "* `amount_1_requested` - The maximum amount of token_1 to send",
+        "* `amount_0_requested` - The maximum amount of token_0 to send, can be 0 to collect fees in only token_1",
+        "* `amount_1_requested` - The maximum amount of token_1 to send, can be 0 to collect fees in only token_0",
         ""
       ],
       "discriminator": [
@@ -316,8 +388,8 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
-        "* `reward_index` - the index to reward info, it must be smaller than 3",
+        "* `ctx` - The context of accounts",
+        "* `reward_index` - the index to reward info",
         ""
       ],
       "discriminator": [
@@ -356,7 +428,8 @@
           "name": "reward_token_vault",
           "docs": [
             "Reward vault transfer remaining token to founder token account"
-          ]
+          ],
+          "writable": true
         },
         {
           "name": "reward_vault_mint",
@@ -395,12 +468,13 @@
       "docs": [
         "# Arguments",
         "",
-        "* `ctx`- The accounts needed by instruction.",
+        "* `ctx` - The accounts needed by instruction.",
         "* `index` - The index of amm config, there may be multiple config.",
         "* `tick_spacing` - The tickspacing binding with config, cannot be changed.",
         "* `trade_fee_rate` - Trade fee rate, can be changed.",
         "* `protocol_fee_rate` - The rate of protocol fee within trade fee.",
         "* `fund_fee_rate` - The rate of fund fee within trade fee.",
+        "* `limit_fee_rate` - The rate of limit order fee.",
         ""
       ],
       "discriminator": [
@@ -421,7 +495,7 @@
           ],
           "writable": true,
           "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
         },
         {
           "name": "amm_config",
@@ -482,13 +556,376 @@
       ]
     },
     {
+      "name": "create_customizable_pool",
+      "docs": [
+        "Creates a pool for the given token pair with customizable parameters",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `customizable_params` - the customizable parameters",
+        ""
+      ],
+      "discriminator": [
+        43,
+        68,
+        212,
+        167,
+        89,
+        47,
+        164,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "pool_creator",
+          "docs": [
+            "Address paying to create the pool"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "amm_config",
+          "docs": [
+            "Which config the pool belongs to."
+          ]
+        },
+        {
+          "name": "pool_state",
+          "docs": [
+            "Initialize an account to store the pool state"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "amm_config"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint_0"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint_1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint_0",
+          "docs": [
+            "Token_0 mint, the key must be smaller then token_1 mint."
+          ]
+        },
+        {
+          "name": "token_mint_1",
+          "docs": [
+            "Token_1 mint"
+          ]
+        },
+        {
+          "name": "token_vault_0",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool_state"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint_0"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_vault_1",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool_state"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint_1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "observation_state",
+          "docs": [
+            "Initialize an account to store oracle observations"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  98,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tick_array_bitmap",
+          "docs": [
+            "Initialize an account to store if a tick array is initialized."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  116,
+                  105,
+                  99,
+                  107,
+                  95,
+                  97,
+                  114,
+                  114,
+                  97,
+                  121,
+                  95,
+                  98,
+                  105,
+                  116,
+                  109,
+                  97,
+                  112,
+                  95,
+                  101,
+                  120,
+                  116,
+                  101,
+                  110,
+                  115,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program_0",
+          "docs": [
+            "Spl token program or token program 2022"
+          ]
+        },
+        {
+          "name": "token_program_1",
+          "docs": [
+            "Spl token program or token program 2022"
+          ]
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "To create a new program account"
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "docs": [
+            "Sysvar for program account"
+          ],
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "customizable_params",
+          "type": {
+            "defined": {
+              "name": "CreateCustomizableParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "create_dynamic_fee_config",
+      "docs": [
+        "Create dynamic fee config",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `index` - The index of dynamic fee config",
+        "* `filter_period` - The period of filter",
+        "* `decay_period` - The period of decay",
+        "* `reduction_factor` - The reduction factor",
+        "* `adaptive_fee_control_factor` - The adaptive fee control factor",
+        "* `max_volatility_accumulator` - The max volatility accumulator",
+        "* `tick_group_size` - The tick group size"
+      ],
+      "discriminator": [
+        189,
+        14,
+        181,
+        120,
+        85,
+        118,
+        227,
+        62
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
+        },
+        {
+          "name": "dynamic_fee_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  121,
+                  110,
+                  97,
+                  109,
+                  105,
+                  99,
+                  95,
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "index",
+          "type": "u16"
+        },
+        {
+          "name": "filter_period",
+          "type": "u16"
+        },
+        {
+          "name": "decay_period",
+          "type": "u16"
+        },
+        {
+          "name": "reduction_factor",
+          "type": "u16"
+        },
+        {
+          "name": "dynamic_fee_control",
+          "type": "u32"
+        },
+        {
+          "name": "max_volatility_accumulator",
+          "type": "u32"
+        }
+      ]
+    },
+    {
       "name": "create_operation_account",
       "docs": [
         "Creates an operation account for the program",
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
+        "* `ctx` - The context of accounts",
         ""
       ],
       "discriminator": [
@@ -509,7 +946,7 @@
           ],
           "writable": true,
           "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
         },
         {
           "name": "operation_state",
@@ -550,7 +987,7 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
+        "* `ctx` - The context of accounts",
         "* `sqrt_price_x64` - the initial sqrt price (amount_token_1 / amount_token_0) of the pool as a Q64.64",
         "Note: The open_time must be smaller than the current block_timestamp on chain."
       ],
@@ -625,9 +1062,6 @@
         },
         {
           "name": "token_vault_0",
-          "docs": [
-            "Token_0 vault for the pool"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -659,9 +1093,6 @@
         },
         {
           "name": "token_vault_1",
-          "docs": [
-            "Token_1 vault for the pool"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -815,7 +1246,7 @@
     {
       "name": "create_support_mint_associated",
       "docs": [
-        "Create support token22 mint account which can create pool and send rewards with ignoring the not support extensions."
+        "Create support token22 mint account which can create pool and send rewards while ignoring unsupported extensions."
       ],
       "discriminator": [
         17,
@@ -834,8 +1265,7 @@
             "Address to be set as protocol owner."
           ],
           "writable": true,
-          "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "signer": true
         },
         {
           "name": "token_mint",
@@ -881,6 +1311,114 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "decrease_limit_order",
+      "docs": [
+        "Decrease/Cancel a limit order",
+        "First settle the filled portion of the order; only the remaining unfilled amount can be decreased.",
+        "Even if the specified amount is very large, the decrease will not exceed the remaining unfilled order amount.",
+        "It is recommended to call the `settle_limit_order` instruction before invoking this instruction to settle any filled portions of the order.",
+        "Make sure to check your order's remaining unfilled amount.",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `amount` - The decrease amount of the order,",
+        "* `amount_min` - The minimum amount of the order, which serves as a slippage check",
+        ""
+      ],
+      "discriminator": [
+        117,
+        157,
+        60,
+        103,
+        66,
+        49,
+        163,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "pool_state",
+          "writable": true
+        },
+        {
+          "name": "tick_array",
+          "writable": true
+        },
+        {
+          "name": "limit_order",
+          "writable": true
+        },
+        {
+          "name": "input_token_account",
+          "docs": [
+            "The payer's limit order token account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "output_token_account",
+          "docs": [
+            "The owner's output token account (opposite direction from input)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_vault",
+          "docs": [
+            "The address that holds limit order token"
+          ],
+          "writable": true
+        },
+        {
+          "name": "output_vault",
+          "docs": [
+            "The address that holds output tokens"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_vault_mint",
+          "docs": [
+            "The mint of token vault"
+          ]
+        },
+        {
+          "name": "output_vault_mint",
+          "docs": [
+            "The mint of output vault"
+          ]
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "SPL program for token transfers"
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "token_program_2022",
+          "docs": [
+            "SPL program 2022 for token transfers"
+          ],
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "amount_min",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "decrease_liquidity",
@@ -932,39 +1470,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_lower_index",
-                "account": "PersonalPositionState"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_upper_index",
-                "account": "PersonalPositionState"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "token_vault_0",
@@ -1080,39 +1586,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_lower_index",
-                "account": "PersonalPositionState"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_upper_index",
-                "account": "PersonalPositionState"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "token_vault_0",
@@ -1206,6 +1680,78 @@
       ]
     },
     {
+      "name": "increase_limit_order",
+      "docs": [
+        "Increase a limit order",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `amount` - The increase amount of the order",
+        "* `is_increase` - The direction of the order, true: increase, false: decrease",
+        ""
+      ],
+      "discriminator": [
+        177,
+        144,
+        89,
+        236,
+        250,
+        186,
+        125,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "pool_state"
+        },
+        {
+          "name": "tick_array",
+          "writable": true
+        },
+        {
+          "name": "limit_order",
+          "writable": true
+        },
+        {
+          "name": "input_token_account",
+          "docs": [
+            "The payer's limit order token account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_vault",
+          "docs": [
+            "The address that holds limit order token"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_vault_mint",
+          "docs": [
+            "The mint of token vault"
+          ]
+        },
+        {
+          "name": "input_token_program",
+          "docs": [
+            "SPL-TOKEN / SPL-TOKEN2022 program for token transfers"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "increase_liquidity",
       "docs": [
         "#[deprecated(note = \"Use `increase_liquidity_v2` instead.\")]",
@@ -1248,39 +1794,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_lower_index",
-                "account": "PersonalPositionState"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_upper_index",
-                "account": "PersonalPositionState"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "personal_position",
@@ -1397,39 +1911,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_lower_index",
-                "account": "PersonalPositionState"
-              },
-              {
-                "kind": "account",
-                "path": "personal_position.tick_upper_index",
-                "account": "PersonalPositionState"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "personal_position",
@@ -1535,7 +2017,7 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
+        "* `ctx` - The context of accounts",
         "* `reward_index` - the index to reward info",
         "* `open_time` - reward open timestamp",
         "* `end_time` - reward end timestamp",
@@ -1610,9 +2092,6 @@
         },
         {
           "name": "reward_token_vault",
-          "docs": [
-            "A pda, reward vault"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -1673,6 +2152,131 @@
       ]
     },
     {
+      "name": "open_limit_order",
+      "docs": [
+        "Place a limit order",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `nonce_index` - The limit order nonce account index, used to create user's order nonce PDA account.",
+        "* `zero_for_one` - The direction of the order, true: zero for one, false: one for zero",
+        "* `tick_index` - The index of the tick",
+        "* `amount` - The amount of the order",
+        "* `with_metadata` - The flag indicating whether to create NFT mint metadata",
+        ""
+      ],
+      "discriminator": [
+        157,
+        32,
+        218,
+        183,
+        71,
+        29,
+        18,
+        147
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool_state",
+          "docs": [
+            "The pool"
+          ],
+          "writable": true
+        },
+        {
+          "name": "tick_array",
+          "writable": true
+        },
+        {
+          "name": "limit_order_nonce",
+          "docs": [
+            "The order nonce account PDA"
+          ],
+          "writable": true
+        },
+        {
+          "name": "limit_order",
+          "docs": [
+            "The order account PDA"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "payer"
+              },
+              {
+                "kind": "account",
+                "path": "limit_order_nonce"
+              },
+              {
+                "kind": "account",
+                "path": "limit_order_nonce.order_nonce",
+                "account": "LimitOrderNonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "input_token_account",
+          "docs": [
+            "The payer's limit order token account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_vault",
+          "docs": [
+            "The address that holds limit order token"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_vault_mint",
+          "docs": [
+            "The mint of token vault"
+          ]
+        },
+        {
+          "name": "input_token_program",
+          "docs": [
+            "SPL-TOKEN / SPL-TOKEN2022 program for input token transfers"
+          ]
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "SPL program for system operations"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce_index",
+          "type": "u8"
+        },
+        {
+          "name": "zero_for_one",
+          "type": "bool"
+        },
+        {
+          "name": "tick_index",
+          "type": "i32"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "open_position",
       "docs": [
         "#[deprecated(note = \"Use `open_position_with_token22_nft` instead.\")]",
@@ -1683,8 +2287,8 @@
         "* `ctx` - The context of accounts",
         "* `tick_lower_index` - The low boundary of market",
         "* `tick_upper_index` - The upper boundary of market",
-        "* `tick_array_lower_start_index` - The start index of tick array which include tick low",
-        "* `tick_array_upper_start_index` - The start index of tick array which include tick upper",
+        "* `tick_array_lower_start_index` - The start index of tick array which includes tick low",
+        "* `tick_array_upper_start_index` - The start index of tick array which includes tick upper",
         "* `liquidity` - The liquidity to be added",
         "* `amount_0_max` - The max amount of token_0 to spend, which serves as a slippage check",
         "* `amount_1_max` - The max amount of token_1 to spend, which serves as a slippage check",
@@ -1829,40 +2433,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "docs": [
-            "Store the information of market marking in range"
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "arg",
-                "path": "tick_lower_index"
-              },
-              {
-                "kind": "arg",
-                "path": "tick_upper_index"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "tick_array_lower",
@@ -2060,8 +2631,8 @@
         "* `ctx` - The context of accounts",
         "* `tick_lower_index` - The low boundary of market",
         "* `tick_upper_index` - The upper boundary of market",
-        "* `tick_array_lower_start_index` - The start index of tick array which include tick low",
-        "* `tick_array_upper_start_index` - The start index of tick array which include tick upper",
+        "* `tick_array_lower_start_index` - The start index of tick array which includes tick low",
+        "* `tick_array_upper_start_index` - The start index of tick array which includes tick upper",
         "* `liquidity` - The liquidity to be added, if zero, and the base_flag is specified, calculate liquidity base amount_0_max or amount_1_max according base_flag, otherwise open position with zero liquidity",
         "* `amount_0_max` - The max amount of token_0 to spend, which serves as a slippage check",
         "* `amount_1_max` - The max amount of token_1 to spend, which serves as a slippage check",
@@ -2207,40 +2778,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "docs": [
-            "Store the information of market marking in range"
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "arg",
-                "path": "tick_lower_index"
-              },
-              {
-                "kind": "arg",
-                "path": "tick_upper_index"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "tick_array_lower",
@@ -2466,8 +3004,8 @@
         "* `ctx` - The context of accounts",
         "* `tick_lower_index` - The low boundary of market",
         "* `tick_upper_index` - The upper boundary of market",
-        "* `tick_array_lower_start_index` - The start index of tick array which include tick low",
-        "* `tick_array_upper_start_index` - The start index of tick array which include tick upper",
+        "* `tick_array_lower_start_index` - The start index of tick array which includes tick low",
+        "* `tick_array_upper_start_index` - The start index of tick array which includes tick upper",
         "* `liquidity` - The liquidity to be added, if zero, and the base_flag is specified, calculate liquidity base amount_0_max or amount_1_max according base_flag, otherwise open position with zero liquidity",
         "* `amount_0_max` - The max amount of token_0 to spend, which serves as a slippage check",
         "* `amount_1_max` - The max amount of token_1 to spend, which serves as a slippage check",
@@ -2517,40 +3055,7 @@
           "writable": true
         },
         {
-          "name": "protocol_position",
-          "docs": [
-            "Store the information of market marking in range"
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool_state"
-              },
-              {
-                "kind": "arg",
-                "path": "tick_lower_index"
-              },
-              {
-                "kind": "arg",
-                "path": "tick_upper_index"
-              }
-            ]
-          }
+          "name": "protocol_position"
         },
         {
           "name": "tick_array_lower",
@@ -2767,7 +3272,7 @@
         "# Arguments",
         "",
         "* `ctx` - The context of accounts",
-        "* `reward_index` - The index of reward token in the pool, it must be smaller than 3",
+        "* `reward_index` - The index of reward token in the pool.",
         "* `emissions_per_second_x64` - The per second emission reward, when extend the current cycle,",
         "new value can't be less than old value",
         "* `open_time` - reward open timestamp, must be set when starting a new cycle",
@@ -2858,6 +3363,70 @@
       ]
     },
     {
+      "name": "settle_limit_order",
+      "docs": [
+        "Settle a limit order",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        ""
+      ],
+      "discriminator": [
+        205,
+        78,
+        116,
+        33,
+        92,
+        105,
+        26,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "pool_state"
+        },
+        {
+          "name": "tick_array"
+        },
+        {
+          "name": "limit_order",
+          "writable": true
+        },
+        {
+          "name": "output_token_account",
+          "docs": [
+            "The owner's output token account (opposite direction from input)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "output_vault",
+          "docs": [
+            "The address that holds output tokens"
+          ],
+          "writable": true
+        },
+        {
+          "name": "output_vault_mint",
+          "docs": [
+            "The mint of output vault"
+          ]
+        },
+        {
+          "name": "output_token_program",
+          "docs": [
+            "SPL-TOKEN / SPL-TOKEN2022 program for token transfers"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "swap",
       "docs": [
         "#[deprecated(note = \"Use `swap_v2` instead.\")]",
@@ -2868,7 +3437,7 @@
         "* `ctx` - The context of accounts",
         "* `amount` - Arranged in pairs with other_amount_threshold. (amount_in, amount_out_minimum) or (amount_out, amount_in_maximum)",
         "* `other_amount_threshold` - For slippage check",
-        "* `sqrt_price_limit_x64` - The Q64.64 format √P limit price, and if it is 0, the maximum and minimum prices that can be reached are set by default according to the swap direction.",
+        "* `sqrt_price_limit` - The Q64.64 sqrt price √P limit. If zero for one, the price cannot",
         "* `is_base_input` - swap base input or swap base output",
         ""
       ],
@@ -2978,7 +3547,8 @@
         "",
         "* `ctx` - The context of accounts",
         "* `amount_in` - Token amount to be swapped in",
-        "* `amount_out_minimum` - Minimum output amount for slip control"
+        "* `amount_out_minimum` - Panic if output amount is below minimum amount. For slippage.",
+        ""
       ],
       "discriminator": [
         69,
@@ -3055,7 +3625,7 @@
         "* `ctx` - The context of accounts",
         "* `amount` - Arranged in pairs with other_amount_threshold. (amount_in, amount_out_minimum) or (amount_out, amount_in_maximum)",
         "* `other_amount_threshold` - For slippage check",
-        "* `sqrt_price_limit` - The Q64.64 format √P limit price, and if it is 0, the maximum and minimum prices that can be reached are set by default according to the swap direction.",
+        "* `sqrt_price_limit` - The Q64.64 sqrt price √P limit. If zero for one, the price cannot",
         "* `is_base_input` - swap base input or swap base output",
         ""
       ],
@@ -3185,8 +3755,8 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
-        "* `new_owner`- new owner pubkey",
+        "* `ctx` - The context of accounts",
+        "* `new_owner` - new owner pubkey",
         ""
       ],
       "discriminator": [
@@ -3206,7 +3776,7 @@
             "Address to be set as operation account owner."
           ],
           "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
         },
         {
           "name": "pool_state",
@@ -3228,13 +3798,15 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
-        "* `trade_fee_rate`- The new trade fee rate of amm config, be set when `param` is 0",
-        "* `protocol_fee_rate`- The new protocol fee rate of amm config, be set when `param` is 1",
-        "* `fund_fee_rate`- The new fund fee rate of amm config, be set when `param` is 2",
-        "* `new_owner`- The config's new owner, be set when `param` is 3",
-        "* `new_fund_owner`- The config's new fund owner, be set when `param` is 4",
-        "* `param`- The value can be 0 | 1 | 2 | 3 | 4, otherwise will report a error",
+        "* `ctx` - The context of accounts",
+        "* `trade_fee_rate` - The new trade fee rate of amm config, be set when `param` is 0",
+        "* `protocol_fee_rate` - The new protocol fee rate of amm config, be set when `param` is 1",
+        "* `fund_fee_rate` - The new fund fee rate of amm config, be set when `param` is 2",
+        "* `new_owner` - The config's new owner, be set when `param` is 3",
+        "* `new_fund_owner` - The config's new fund owner, be set when `param` is 4",
+        "* `limit_protocol_fee_rate` - The new limit protocol fee rate of amm config, be set when `param` is 5",
+        "* `limit_fund_fee_rate` - The new limit fund fee rate of amm config, be set when `param` is 6",
+        "* `param` - The value can be 0 | 1 | 2 | 3 | 4 | 5 | 6, otherwise will report an error",
         ""
       ],
       "discriminator": [
@@ -3254,7 +3826,7 @@
             "The amm config owner or admin"
           ],
           "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
         },
         {
           "name": "amm_config",
@@ -3276,14 +3848,83 @@
       ]
     },
     {
+      "name": "update_dynamic_fee_config",
+      "docs": [
+        "Updates the dynamic fee configuration constants.",
+        "",
+        "This function allows updating the parameters that control dynamic fee calculation,",
+        "such as filter period, decay period, reduction factor, fee control factor, etc.",
+        "Only the admin or the amm config owner can update these settings.",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `filter_period` - Period that determines the high frequency trading time window (in seconds)",
+        "* `decay_period` - Period that determines when the dynamic fee starts to decrease (in seconds)",
+        "* `reduction_factor` - Dynamic fee rate decrement rate, used for volatility reference decay",
+        "* `dynamic_fee_control` - Factor used to scale the dynamic fee component",
+        "* `max_volatility_accumulator` - Maximum value for the volatility accumulator",
+        "* `create_pool_authority` - The new authority pubkey that can use this dynamic fee config to create pools"
+      ],
+      "discriminator": [
+        7,
+        7,
+        80,
+        8,
+        2,
+        199,
+        132,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "The admin has permission to update the config"
+          ],
+          "signer": true,
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
+        },
+        {
+          "name": "dynamic_fee_config",
+          "docs": [
+            "The dynamic fee config account to be updated"
+          ],
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "filter_period",
+          "type": "u16"
+        },
+        {
+          "name": "decay_period",
+          "type": "u16"
+        },
+        {
+          "name": "reduction_factor",
+          "type": "u16"
+        },
+        {
+          "name": "dynamic_fee_control",
+          "type": "u32"
+        },
+        {
+          "name": "max_volatility_accumulator",
+          "type": "u32"
+        }
+      ]
+    },
+    {
       "name": "update_operation_account",
       "docs": [
         "Update the operation account",
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
-        "* `param`- The value can be 0 | 1 | 2 | 3, otherwise will report a error",
+        "* `ctx` - The context of accounts",
+        "* `param` - The value can be 0 | 1 | 2 | 3, otherwise will report an error",
         "* `keys`- update operation owner when the `param` is 0",
         "remove operation owner when the `param` is 1",
         "update whitelist mint when the `param` is 2",
@@ -3307,7 +3948,7 @@
             "Address to be set as operation account owner."
           ],
           "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
         },
         {
           "name": "operation_state",
@@ -3359,7 +4000,7 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
+        "* `ctx` - The context of accounts",
         "* `status` - The value of status",
         ""
       ],
@@ -3377,7 +4018,7 @@
         {
           "name": "authority",
           "signer": true,
-          "address": "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ"
+          "address": "2kqJncUWCkk5TyJYamPW5DECfqAz4brYpH6r5j6vg9yx"
         },
         {
           "name": "pool_state",
@@ -3398,7 +4039,7 @@
         "",
         "# Arguments",
         "",
-        "* `ctx`- The context of accounts",
+        "* `ctx` - The context of accounts",
         ""
       ],
       "discriminator": [
@@ -3435,6 +4076,45 @@
         203,
         43,
         111
+      ]
+    },
+    {
+      "name": "DynamicFeeConfig",
+      "discriminator": [
+        244,
+        226,
+        88,
+        82,
+        14,
+        59,
+        246,
+        220
+      ]
+    },
+    {
+      "name": "LimitOrderNonce",
+      "discriminator": [
+        17,
+        153,
+        236,
+        57,
+        25,
+        199,
+        231,
+        248
+      ]
+    },
+    {
+      "name": "LimitOrderState",
+      "discriminator": [
+        1,
+        238,
+        5,
+        142,
+        207,
+        62,
+        44,
+        228
       ]
     },
     {
@@ -3596,6 +4276,19 @@
       ]
     },
     {
+      "name": "DecreaseLimitOrderEvent",
+      "discriminator": [
+        70,
+        48,
+        40,
+        221,
+        219,
+        237,
+        212,
+        163
+      ]
+    },
+    {
       "name": "DecreaseLiquidityEvent",
       "discriminator": [
         58,
@@ -3606,6 +4299,19 @@
         50,
         85,
         56
+      ]
+    },
+    {
+      "name": "IncreaseLimitOrderEvent",
+      "discriminator": [
+        11,
+        120,
+        13,
+        204,
+        199,
+        87,
+        19,
+        200
       ]
     },
     {
@@ -3648,6 +4354,19 @@
       ]
     },
     {
+      "name": "OpenLimitOrderEvent",
+      "discriminator": [
+        106,
+        24,
+        71,
+        85,
+        57,
+        169,
+        158,
+        216
+      ]
+    },
+    {
       "name": "PoolCreatedEvent",
       "discriminator": [
         25,
@@ -3658,6 +4377,19 @@
         99,
         53,
         63
+      ]
+    },
+    {
+      "name": "SettleLimitOrderEvent",
+      "discriminator": [
+        88,
+        119,
+        77,
+        164,
+        125,
+        124,
+        10,
+        194
       ]
     },
     {
@@ -3690,228 +4422,258 @@
   "errors": [
     {
       "code": 6000,
-      "name": "LOK",
-      "msg": "LOK"
-    },
-    {
-      "code": 6001,
       "name": "NotApproved",
       "msg": "Not approved"
     },
     {
-      "code": 6002,
+      "code": 6001,
       "name": "InvalidUpdateConfigFlag",
       "msg": "invalid update amm config flag"
     },
     {
-      "code": 6003,
+      "code": 6002,
       "name": "AccountLack",
       "msg": "Account lack"
     },
     {
-      "code": 6004,
+      "code": 6003,
       "name": "ClosePositionErr",
-      "msg": "Remove liquitity, collect fees owed and reward then you can close position account"
+      "msg": "Remove liquidity, collect fees owed and reward then you can close position account"
     },
     {
-      "code": 6005,
-      "name": "ZeroMintAmount",
-      "msg": "Minting amount should be greater than 0"
-    },
-    {
-      "code": 6006,
+      "code": 6004,
       "name": "InvalidTickIndex",
       "msg": "Tick out of range"
     },
     {
-      "code": 6007,
+      "code": 6005,
       "name": "TickInvalidOrder",
       "msg": "The lower tick must be below the upper tick"
     },
     {
-      "code": 6008,
+      "code": 6006,
       "name": "TickLowerOverflow",
       "msg": "The tick must be greater, or equal to the minimum tick(-443636)"
     },
     {
-      "code": 6009,
+      "code": 6007,
       "name": "TickUpperOverflow",
       "msg": "The tick must be lesser than, or equal to the maximum tick(443636)"
     },
     {
-      "code": 6010,
+      "code": 6008,
       "name": "TickAndSpacingNotMatch",
       "msg": "tick % tick_spacing must be zero"
     },
     {
-      "code": 6011,
+      "code": 6009,
       "name": "InvalidTickArray",
       "msg": "Invalid tick array account"
     },
     {
-      "code": 6012,
+      "code": 6010,
       "name": "InvalidTickArrayBoundary",
       "msg": "Invalid tick array boundary"
     },
     {
-      "code": 6013,
+      "code": 6011,
       "name": "SqrtPriceLimitOverflow",
       "msg": "Square root price limit overflow"
     },
     {
-      "code": 6014,
+      "code": 6012,
       "name": "SqrtPriceX64",
       "msg": "sqrt_price_x64 out of range"
     },
     {
-      "code": 6015,
+      "code": 6013,
       "name": "LiquiditySubValueErr",
       "msg": "Liquidity sub delta L must be smaller than before"
     },
     {
-      "code": 6016,
+      "code": 6014,
       "name": "LiquidityAddValueErr",
       "msg": "Liquidity add delta L must be greater, or equal to before"
     },
     {
-      "code": 6017,
-      "name": "InvalidLiquidity",
-      "msg": "Invalid liquidity when update position"
-    },
-    {
-      "code": 6018,
+      "code": 6015,
       "name": "ForbidBothZeroForSupplyLiquidity",
       "msg": "Both token amount must not be zero while supply liquidity"
     },
     {
-      "code": 6019,
+      "code": 6016,
       "name": "LiquidityInsufficient",
       "msg": "Liquidity insufficient"
     },
     {
-      "code": 6020,
-      "name": "TransactionTooOld",
-      "msg": "Transaction too old"
-    },
-    {
-      "code": 6021,
+      "code": 6017,
       "name": "PriceSlippageCheck",
       "msg": "Price slippage check"
     },
     {
-      "code": 6022,
+      "code": 6018,
       "name": "TooLittleOutputReceived",
       "msg": "Too little output received"
     },
     {
-      "code": 6023,
+      "code": 6019,
       "name": "TooMuchInputPaid",
       "msg": "Too much input paid"
     },
     {
-      "code": 6024,
+      "code": 6020,
       "name": "ZeroAmountSpecified",
       "msg": "Swap special amount can not be zero"
     },
     {
-      "code": 6025,
+      "code": 6021,
       "name": "InvalidInputPoolVault",
       "msg": "Input pool vault is invalid"
     },
     {
-      "code": 6026,
+      "code": 6022,
       "name": "TooSmallInputOrOutputAmount",
       "msg": "Swap input or output amount is too small"
     },
     {
-      "code": 6027,
+      "code": 6023,
       "name": "NotEnoughTickArrayAccount",
-      "msg": "Not enought tick array account"
+      "msg": "Not enough tick array account"
     },
     {
-      "code": 6028,
+      "code": 6024,
       "name": "InvalidFirstTickArrayAccount",
       "msg": "Invalid first tick array account"
     },
     {
-      "code": 6029,
+      "code": 6025,
       "name": "InvalidRewardIndex",
       "msg": "Invalid reward index"
     },
     {
-      "code": 6030,
+      "code": 6026,
       "name": "FullRewardInfo",
       "msg": "The init reward token reach to the max"
     },
     {
-      "code": 6031,
+      "code": 6027,
       "name": "RewardTokenAlreadyInUse",
       "msg": "The init reward token already in use"
     },
     {
-      "code": 6032,
+      "code": 6028,
       "name": "ExceptRewardMint",
       "msg": "The reward tokens must contain one of pool vault mint except the last reward"
     },
     {
-      "code": 6033,
+      "code": 6029,
       "name": "InvalidRewardInitParam",
       "msg": "Invalid reward init param"
     },
     {
-      "code": 6034,
-      "name": "InvalidRewardDesiredAmount",
-      "msg": "Invalid collect reward desired amount"
-    },
-    {
-      "code": 6035,
+      "code": 6030,
       "name": "InvalidRewardInputAccountNumber",
       "msg": "Invalid collect reward input account number"
     },
     {
-      "code": 6036,
+      "code": 6031,
       "name": "InvalidRewardPeriod",
       "msg": "Invalid reward period"
     },
     {
-      "code": 6037,
-      "name": "NotApproveUpdateRewardEmissiones",
-      "msg": "Modification of emissiones is allowed within 72 hours from the end of the previous cycle"
+      "code": 6032,
+      "name": "NotApproveUpdateRewardEmissions",
+      "msg": "Modification of emissions is allowed within 72 hours from the end of the previous cycle"
     },
     {
-      "code": 6038,
+      "code": 6033,
       "name": "UnInitializedRewardInfo",
       "msg": "uninitialized reward info"
     },
     {
-      "code": 6039,
+      "code": 6034,
       "name": "NotSupportMint",
       "msg": "Not support token_2022 mint extension"
     },
     {
-      "code": 6040,
+      "code": 6035,
       "name": "MissingTickArrayBitmapExtensionAccount",
       "msg": "Missing tickarray bitmap extension account"
     },
     {
-      "code": 6041,
+      "code": 6036,
       "name": "InsufficientLiquidityForDirection",
       "msg": "Insufficient liquidity for this direction"
     },
     {
-      "code": 6042,
+      "code": 6037,
       "name": "MaxTokenOverflow",
       "msg": "Max token overflow"
     },
     {
-      "code": 6043,
+      "code": 6038,
       "name": "CalculateOverflow",
       "msg": "Calculate overflow"
     },
     {
-      "code": 6044,
+      "code": 6039,
       "name": "TransferFeeCalculateNotMatch",
       "msg": "TransferFee calculate not match"
+    },
+    {
+      "code": 6040,
+      "name": "OrderAlreadyFilled",
+      "msg": "Order already fully filled, cannot modify"
+    },
+    {
+      "code": 6041,
+      "name": "InvalidOrderPhase",
+      "msg": "Invalid order phase"
+    },
+    {
+      "code": 6042,
+      "name": "InvalidLimitOrderAmount",
+      "msg": "Invalid limit order amount"
+    },
+    {
+      "code": 6043,
+      "name": "OrderPhaseSaturated",
+      "msg": "Tick order phase saturated"
+    },
+    {
+      "code": 6044,
+      "name": "InvalidDynamicFeeConfigParams",
+      "msg": "Invalid dynamic fee config params"
+    },
+    {
+      "code": 6045,
+      "name": "InvalidFeeOn",
+      "msg": "Invalid fee on which token (must be 0, 1, or 2)"
+    },
+    {
+      "code": 6046,
+      "name": "ZeroSqrtPrice",
+      "msg": "sqrt_price_x64 must be greater than 0"
+    },
+    {
+      "code": 6047,
+      "name": "ZeroLiquidity",
+      "msg": "liquidity must be greater than 0"
+    },
+    {
+      "code": 6048,
+      "name": "MissingBaseFlag",
+      "msg": "base_flag is required when liquidity is zero"
+    },
+    {
+      "code": 6049,
+      "name": "MissingMintAccount",
+      "msg": "Mint account is required but not provided"
+    },
+    {
+      "code": 6050,
+      "name": "MissingTokenProgram2022",
+      "msg": "Token-2022 program is required but not provided"
     }
   ],
   "types": [
@@ -3975,6 +4737,9 @@
           },
           {
             "name": "fund_owner",
+            "docs": [
+              "The fund owner"
+            ],
             "type": "pubkey"
           },
           {
@@ -3985,6 +4750,23 @@
                 3
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectFeeOn",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FromInput"
+          },
+          {
+            "name": "Token0Only"
+          },
+          {
+            "name": "Token1Only"
           }
         ]
       }
@@ -4121,6 +4903,30 @@
       }
     },
     {
+      "name": "CreateCustomizableParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sqrt_price_x64",
+            "type": "u128"
+          },
+          {
+            "name": "collect_fee_on",
+            "type": {
+              "defined": {
+                "name": "CollectFeeOn"
+              }
+            }
+          },
+          {
+            "name": "enable_dynamic_fee",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "CreatePersonalPositionEvent",
       "docs": [
         "Emitted when create a new position"
@@ -4202,6 +5008,70 @@
       }
     },
     {
+      "name": "DecreaseLimitOrderEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_id",
+            "docs": [
+              "The pool whose limit order was decreased"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "limit_order",
+            "docs": [
+              "The limit order account"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "zero_for_one",
+            "docs": [
+              "Direction of the limit order (true if zero_for_one)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "tick_index",
+            "docs": [
+              "Tick index of the limit order"
+            ],
+            "type": "i32"
+          },
+          {
+            "name": "total_amount",
+            "docs": [
+              "Total amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "filled_amount",
+            "docs": [
+              "Filled amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settled_output_amount",
+            "docs": [
+              "Amount of output tokens settled (excluding fees)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "decreased_amount",
+            "docs": [
+              "Amount of input tokens returned to user"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "DecreaseLiquidityEvent",
       "docs": [
         "Emitted when liquidity is decreased."
@@ -4271,6 +5141,195 @@
             "name": "transfer_fee_1",
             "docs": [
               "The amount of token_1 transfer fee"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DynamicFeeConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "index",
+            "type": "u16"
+          },
+          {
+            "name": "filter_period",
+            "type": "u16"
+          },
+          {
+            "name": "decay_period",
+            "type": "u16"
+          },
+          {
+            "name": "reduction_factor",
+            "type": "u16"
+          },
+          {
+            "name": "dynamic_fee_control",
+            "type": "u32"
+          },
+          {
+            "name": "max_volatility_accumulator",
+            "type": "u32"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u64",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DynamicFeeInfo",
+      "docs": [
+        "Dynamic fee information for pool configuration"
+      ],
+      "serialization": "bytemuckunsafe",
+      "repr": {
+        "kind": "c",
+        "packed": true
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "filter_period",
+            "docs": [
+              "Period that determines the high frequency trading time window (in seconds)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "decay_period",
+            "docs": [
+              "Period that determines when the dynamic fee starts to decrease (in seconds)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "reduction_factor",
+            "docs": [
+              "Dynamic fee rate decrement rate, used for volatility reference decay."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "dynamic_fee_control",
+            "docs": [
+              "Factor used to scale the dynamic fee component in the fee rate calculation."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "max_volatility_accumulator",
+            "docs": [
+              "Maximum value for the volatility accumulator, used to cap the dynamic fee rate."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "tick_spacing_index_reference",
+            "docs": [
+              "Active tick spacing index at the last reference update."
+            ],
+            "type": "i32"
+          },
+          {
+            "name": "volatility_reference",
+            "docs": [
+              "Volatility reference value, stores the decayed volatility accumulator."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "volatility_accumulator",
+            "docs": [
+              "Volatility accumulator, used to calculate the dynamic fee rate."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "last_update_timestamp",
+            "docs": [
+              "Last timestamp (block time) when `volatility_reference` and `tick_spacing_index_reference` were updated."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "docs": [
+              "Reserved for future upgrades."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                46
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "IncreaseLimitOrderEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_id",
+            "docs": [
+              "The pool whose limit order was increased"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "limit_order",
+            "docs": [
+              "The limit order account"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "zero_for_one",
+            "docs": [
+              "Direction of the limit order (true if zero_for_one)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "tick_index",
+            "docs": [
+              "Tick index of the limit order"
+            ],
+            "type": "i32"
+          },
+          {
+            "name": "total_amount",
+            "docs": [
+              "Total amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "increased_amount",
+            "docs": [
+              "Increased amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "transfer_fee",
+            "docs": [
+              "Transfer fee of the limit order"
             ],
             "type": "u64"
           }
@@ -4355,6 +5414,125 @@
               "Token reward per second are earned per unit of liquidity"
             ],
             "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LimitOrderNonce",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce_index",
+            "type": "u8"
+          },
+          {
+            "name": "order_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LimitOrderState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "docs": [
+              "Owner of this limit order"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "tick_index",
+            "type": "i32"
+          },
+          {
+            "name": "zero_for_one",
+            "type": "bool"
+          },
+          {
+            "name": "order_phase",
+            "docs": [
+              "Order phase of this limit order, aligned with `TickState.order_phase` for FIFO semantics"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_amount",
+            "docs": [
+              "Total amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "filled_amount",
+            "docs": [
+              "Filled amount of the limit order (informational, for events/display)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settle_base",
+            "docs": [
+              "The unfilled amount when the current computation segment started.",
+              "Set to total_amount on open, reset on decrease. Never updated during settle —",
+              "this avoids cascading floor-division error across multiple settles."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settled_output",
+            "docs": [
+              "Cumulative output paid to user in the current segment. Reset on decrease.",
+              "Each settle computes total_output from the segment base and pays the diff",
+              "(total_output - settled_output), limiting dust deduction to once per segment."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "open_time",
+            "docs": [
+              "Order open time"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "unfilled_ratio_x64",
+            "docs": [
+              "Snapshot of `TickState.unfilled_ratio_x64` at the time this segment started (Q64.64).",
+              "Initialized to Q64 on open; reset to tick's current ratio on decrease."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
           }
         ]
       }
@@ -4590,6 +5768,59 @@
                 4
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OpenLimitOrderEvent",
+      "docs": [
+        "Emitted when a limit order is opened"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_id",
+            "docs": [
+              "The pool whose limit order was opened"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "limit_order",
+            "docs": [
+              "The limit order account"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "zero_for_one",
+            "docs": [
+              "Direction of the limit order (true if zero_for_one)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "tick_index",
+            "docs": [
+              "Tick index of the limit order"
+            ],
+            "type": "i32"
+          },
+          {
+            "name": "total_amount",
+            "docs": [
+              "Total amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "transfer_fee",
+            "docs": [
+              "Transfer fee of the limit order"
+            ],
+            "type": "u64"
           }
         ]
       }
@@ -4954,23 +6185,13 @@
             "type": "u64"
           },
           {
-            "name": "swap_in_amount_token_0",
-            "docs": [
-              "The amounts in and out of swap token_0 and token_1"
-            ],
-            "type": "u128"
-          },
-          {
-            "name": "swap_out_amount_token_1",
-            "type": "u128"
-          },
-          {
-            "name": "swap_in_amount_token_1",
-            "type": "u128"
-          },
-          {
-            "name": "swap_out_amount_token_0",
-            "type": "u128"
+            "name": "padding5",
+            "type": {
+              "array": [
+                "u128",
+                4
+              ]
+            }
           },
           {
             "name": "status",
@@ -4980,7 +6201,15 @@
               "bit1, 1: disable decrease liquidity, 0: normal",
               "bit2, 1: disable collect fee, 0: normal",
               "bit3, 1: disable collect reward, 0: normal",
-              "bit4, 1: disable swap, 0: normal"
+              "bit4, 1: disable swap, 0: normal",
+              "bit5, 1: disable limit order, 0: normal"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "fee_on",
+            "docs": [
+              "Fee on which token (0 = FromInput, 1 = Token0Only, 2 = Token1Only)"
             ],
             "type": "u8"
           },
@@ -4992,7 +6221,7 @@
             "type": {
               "array": [
                 "u8",
-                7
+                6
               ]
             }
           },
@@ -5022,26 +6251,13 @@
             }
           },
           {
-            "name": "total_fees_token_0",
-            "docs": [
-              "except protocol_fee and fund_fee"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "total_fees_claimed_token_0",
-            "docs": [
-              "except protocol_fee and fund_fee"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "total_fees_token_1",
-            "type": "u64"
-          },
-          {
-            "name": "total_fees_claimed_token_1",
-            "type": "u64"
+            "name": "padding6",
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
           },
           {
             "name": "fund_fees_token_0",
@@ -5060,11 +6276,22 @@
             "type": "u64"
           },
           {
+            "name": "dynamic_fee_info",
+            "docs": [
+              "Dynamic fee info"
+            ],
+            "type": {
+              "defined": {
+                "name": "DynamicFeeInfo"
+              }
+            }
+          },
+          {
             "name": "padding1",
             "type": {
               "array": [
                 "u64",
-                24
+                14
               ]
             }
           },
@@ -5241,9 +6468,9 @@
             "type": "u128"
           },
           {
-            "name": "reward_total_emissioned",
+            "name": "reward_total_emitted",
             "docs": [
-              "The total amount of reward emissioned"
+              "The total amount of reward emitted"
             ],
             "type": "u64"
           },
@@ -5282,6 +6509,66 @@
               "emissions were turned on."
             ],
             "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SettleLimitOrderEvent",
+      "docs": [
+        "Emitted when a limit order is settled and proceeds are transferred"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_id",
+            "docs": [
+              "The pool whose limit order was settled"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "limit_order",
+            "docs": [
+              "The limit order account"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "zero_for_one",
+            "docs": [
+              "Direction of the limit order (true if zero_for_one)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "tick_index",
+            "docs": [
+              "Tick index of the limit order"
+            ],
+            "type": "i32"
+          },
+          {
+            "name": "total_amount",
+            "docs": [
+              "Total amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "filled_amount",
+            "docs": [
+              "Filled amount of the limit order"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settled_amount_out",
+            "docs": [
+              "Amount of output tokens transferred (excluding fees)"
+            ],
+            "type": "u64"
           }
         ]
       }
@@ -5561,6 +6848,9 @@
           },
           {
             "name": "reward_growths_outside_x64",
+            "docs": [
+              "Reward growth per unit of liquidity like fee, array of Q64.64"
+            ],
             "type": {
               "array": [
                 "u128",
@@ -5569,11 +6859,41 @@
             }
           },
           {
+            "name": "order_phase",
+            "docs": [
+              "Order phase of the tick, used as a FIFO cohort index for limit orders"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "orders_amount",
+            "docs": [
+              "The amount of limit orders that have never been matched,",
+              "only counts newly opened orders, not partially filled ones"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "part_filled_orders_remaining",
+            "docs": [
+              "Remaining part filled orders amount"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "unfilled_ratio_x64",
+            "docs": [
+              "Cumulative unfilled ratio for the current part-filled cohort (Q64.64 format).",
+              "Starts at Q64(1) when a new cohort forms, multiplied down as fills occur."
+            ],
+            "type": "u128"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u32",
-                13
+                3
               ]
             }
           }
